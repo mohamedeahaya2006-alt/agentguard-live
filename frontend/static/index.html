@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentGuard Live — AI Agent Security & Governance</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cyberDark: '#07090e',
+            cyberCard: '#0d121d',
+            cyberBorder: 'rgba(255,255,255,0.08)',
+            neonCyan: '#06b6d4',
+            neonGreen: '#10b981',
+            neonAmber: '#f59e0b',
+            neonRed: '#ef4444'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-cyberDark text-slate-100 flex flex-col h-screen overflow-hidden">
+
+  <!-- ================= TOP HEADER & TELEMETRY ================= -->
+  <header class="border-b border-cyberBorder bg-[#090e17]/95 px-6 py-3 flex items-center justify-between z-30 shrink-0">
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-2">
+        <div class="p-2 bg-cyan-500/10 border border-cyan-500/30 rounded-lg text-neonCyan">
+          <i data-lucide="shield-check" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="font-black tracking-wider text-lg uppercase bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
+              AgentGuard Live
+            </h1>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 mono font-semibold">
+              v1.0 ENTERPRISE
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400">Real-Time Autonomous Agent Security, Risk & Governance</p>
+        </div>
+      </div>
+
+      <!-- Live Heartbeat Indicator -->
+      <div class="flex items-center space-x-2 bg-black/40 border border-cyberBorder px-3 py-1.5 rounded-full">
+        <span id="system-indicator" class="w-2.5 h-2.5 rounded-full bg-amber-400 pulse-amber"></span>
+        <span id="system-status-text" class="text-xs font-semibold tracking-wider text-amber-400 mono">CONNECTING...</span>
+      </div>
+    </div>
+
+    <!-- Telemetry Ticker -->
+    <div class="hidden lg:flex items-center space-x-6 text-xs mono">
+      <div class="text-center">
+        <div class="text-slate-400 text-[10px] uppercase">Throughput</div>
+        <div id="telemetry-tps" class="text-cyan-400 font-bold text-sm">-- <span class="text-[10px] text-slate-500">act/m</span></div>
+      </div>
+      <div class="w-px h-6 bg-slate-800"></div>
+      <div class="text-center">
+        <div class="text-slate-400 text-[10px] uppercase">Intercepted</div>
+        <div id="telemetry-total" class="text-slate-200 font-bold text-sm">0</div>
+      </div>
+      <div class="w-px h-6 bg-slate-800"></div>
+      <div class="text-center">
+        <div class="text-slate-400 text-[10px] uppercase">Warnings (HITL)</div>
+        <div id="telemetry-warn" class="text-amber-400 font-bold text-sm">0</div>
+      </div>
+      <div class="w-px h-6 bg-slate-800"></div>
+      <div class="text-center">
+        <div class="text-slate-400 text-[10px] uppercase">Blocked</div>
+        <div id="telemetry-blocked" class="text-red-400 font-bold text-sm">0</div>
+      </div>
+    </div>
+
+    <!-- Quick Scenario Action Buttons -->
+    <div class="flex items-center space-x-2">
+      <div class="relative inline-block text-left">
+        <div class="flex items-center space-x-1.5 bg-slate-900 border border-slate-800 p-1 rounded-lg">
+          <button id="btn-scenario-1" class="px-3 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center space-x-1.5 transition font-semibold" title="Finance Agent attempts unauthorized HR salary exfiltration">
+            <span class="text-cyan-400">▶</span>
+            <span>Scenario 1</span>
+          </button>
+          <button id="btn-scenario-2" class="px-3 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center space-x-1.5 transition font-semibold" title="Dev Agent attempts unapproved production deployment (Human in the Loop)">
+            <span class="text-amber-400">⏸</span>
+            <span>Scenario 2</span>
+          </button>
+          <button id="btn-scenario-3" class="px-3 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center space-x-1.5 transition font-semibold" title="Support Agent attacked by indirect prompt injection in customer attachment">
+            <span class="text-red-400">🚨</span>
+            <span>Scenario 3</span>
+          </button>
+          <button id="btn-reset" class="px-2.5 py-1 text-xs rounded bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/40 flex items-center space-x-1 transition font-semibold" title="Reset audit stream and incidents">
+            <span>⟲</span>
+            <span>Reset</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sound FX Toggle -->
+      <button id="btn-sound-toggle" class="p-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-400 hover:text-cyan-400 transition" title="Toggle audio alerts">
+        <span id="icon-sound" class="text-sm">🔊</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= MAIN 3-COLUMN LAYOUT ================= -->
+  <main class="flex-1 grid grid-cols-12 gap-4 p-4 min-h-0 overflow-hidden">
+
+    <!-- LEFT COLUMN: Agent Registry & Incident Memory (3 Cols) -->
+    <section class="col-span-12 lg:col-span-3 flex flex-col space-y-4 min-h-0 overflow-hidden">
+      <!-- Active Agents Registry -->
+      <div class="glass-panel p-4 flex flex-col flex-1 min-h-0">
+        <div class="flex items-center justify-between mb-3 shrink-0">
+          <div class="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-slate-400 mono">
+            <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i>
+            <span>Agent Identity Registry</span>
+          </div>
+          <span id="agent-count-badge" class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 mono">3 ACTIVE</span>
+        </div>
+
+        <div id="agents-list" class="space-y-3 overflow-y-auto flex-1 pr-1">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Security Incident Memory -->
+      <div class="glass-panel p-4 flex flex-col h-1/2 min-h-0">
+        <div class="flex items-center justify-between mb-3 shrink-0">
+          <div class="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-slate-400 mono">
+            <i data-lucide="history" class="w-4 h-4 text-red-400"></i>
+            <span>Incident Memory</span>
+          </div>
+          <span id="incident-count-badge" class="px-2 py-0.5 rounded text-[10px] bg-red-950/60 text-red-400 border border-red-800/40 mono font-semibold">
+            0 DETECTED
+          </span>
+        </div>
+
+        <div id="incident-list" class="space-y-2.5 overflow-y-auto flex-1 pr-1 text-xs">
+          <!-- Dynamically populated -->
+          <div class="text-slate-500 text-center py-6">No security incidents detected. System healthy.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CENTER COLUMN: Real-Time Live Interception Terminal Stream (5 Cols) -->
+    <section class="col-span-12 lg:col-span-5 glass-panel p-4 flex flex-col min-h-0 overflow-hidden">
+      <div class="flex items-center justify-between mb-3 shrink-0 border-b border-cyberBorder pb-2.5">
+        <div class="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-slate-300 mono">
+          <i data-lucide="terminal" class="w-4 h-4 text-emerald-400"></i>
+          <span>Live Interception Feed</span>
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        </div>
+
+        <!-- Feed Filter Buttons -->
+        <div class="flex items-center space-x-1 text-[11px] mono">
+          <button class="filter-btn active px-2 py-0.5 rounded bg-cyan-950/60 text-cyan-400 border border-cyan-800/40" data-filter="ALL">ALL</button>
+          <button class="filter-btn px-2 py-0.5 rounded bg-slate-900 text-slate-400 hover:text-slate-200" data-filter="ALLOW">ALLOW</button>
+          <button class="filter-btn px-2 py-0.5 rounded bg-slate-900 text-slate-400 hover:text-slate-200" data-filter="WARN">WARN</button>
+          <button class="filter-btn px-2 py-0.5 rounded bg-slate-900 text-slate-400 hover:text-slate-200" data-filter="BLOCK">BLOCK</button>
+        </div>
+      </div>
+
+      <!-- Streaming Feed Container -->
+      <div id="stream-feed" class="flex-1 overflow-y-auto space-y-2 font-mono text-xs pr-1">
+        <div class="text-slate-500 text-center py-16">
+          <i data-lucide="radio" class="w-8 h-8 mx-auto mb-2 text-slate-600 animate-pulse"></i>
+          Listening for autonomous agent actions...
+        </div>
+      </div>
+
+      <!-- Stream Footer -->
+      <div class="mt-2 pt-2 border-t border-cyberBorder flex items-center justify-between text-[10px] text-slate-500 mono shrink-0">
+        <div>STREAM STATUS: <span class="text-emerald-400">REALTIME WEBSOCKET</span></div>
+        <div id="stream-count">0 ACTIONS INTERCEPTED</div>
+      </div>
+    </section>
+
+    <!-- RIGHT COLUMN: Risk Scoring & Explainability Inspector (4 Cols) -->
+    <section class="col-span-12 lg:col-span-4 glass-panel p-4 flex flex-col min-h-0 overflow-hidden">
+      <div class="flex items-center justify-between mb-3 shrink-0 border-b border-cyberBorder pb-2.5">
+        <div class="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-slate-300 mono">
+          <i data-lucide="scan-eye" class="w-4 h-4 text-cyan-400"></i>
+          <span>Live Risk & Explainability</span>
+        </div>
+        <span id="selected-event-badge" class="text-[10px] text-slate-400 mono">SELECT ACTION</span>
+      </div>
+
+      <div id="inspector-content" class="flex-1 overflow-y-auto space-y-4 pr-1">
+        <!-- Default Empty State -->
+        <div class="text-slate-500 text-center py-20">
+          <i data-lucide="crosshair" class="w-10 h-10 mx-auto mb-3 text-slate-600"></i>
+          Click any event in the live feed or run a scenario to inspect detailed AI risk reasoning.
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= HUMAN-IN-THE-LOOP APPROVAL MODAL ================= -->
+  <div id="approval-modal" class="fixed inset-0 modal-overlay z-50 flex items-center justify-center hidden">
+    <div class="bg-[#0e1422] border-2 border-amber-500/80 rounded-xl max-w-lg w-full p-6 shadow-2xl pulse-amber">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div class="flex items-center space-x-3">
+          <div class="p-2 bg-amber-500/20 text-amber-400 rounded-lg">
+            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-amber-300 uppercase tracking-wide">Action Paused — Human Approval Required</h3>
+            <p class="text-xs text-slate-400">Policy Gate: Production Infrastructure Protection</p>
+          </div>
+        </div>
+        <span class="px-2 py-1 text-[10px] bg-amber-500/20 text-amber-400 font-mono font-bold rounded border border-amber-500/30">
+          HIGH IMPACT
+        </span>
+      </div>
+
+      <div class="my-4 space-y-3 text-xs">
+        <div class="bg-black/50 p-3 rounded-lg border border-slate-800 font-mono space-y-1.5">
+          <div class="flex justify-between"><span class="text-slate-500">Agent:</span> <span id="modal-agent" class="text-cyan-400 font-bold">DEV-003 (Code Maintenance Agent)</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Attempted Tool:</span> <span id="modal-tool" class="text-slate-200">k8s_deployer</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Target Resource:</span> <span id="modal-target" class="text-amber-400 font-semibold">prod_cluster</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Risk Score:</span> <span id="modal-risk" class="text-amber-400 font-bold">67.0 / 100</span></div>
+        </div>
+
+        <div class="p-3 bg-amber-950/20 border border-amber-800/40 rounded-lg text-slate-300">
+          <p class="font-semibold text-amber-200 mb-1">Reason for Interception:</p>
+          <p id="modal-reason">Direct deployment to production infrastructure requires explicit sign-off from designated human operator.</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex space-x-3 pt-3 border-t border-slate-800">
+        <button id="modal-btn-reject" class="flex-1 py-2.5 px-4 bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-700/50 rounded-lg font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-2 transition">
+          <i data-lucide="x-circle" class="w-4 h-4"></i>
+          <span>Reject & Abort</span>
+        </button>
+        <button id="modal-btn-approve" class="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-2 shadow-lg shadow-emerald-900/50 transition">
+          <i data-lucide="check-circle" class="w-4 h-4"></i>
+          <span>Approve Execution</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
